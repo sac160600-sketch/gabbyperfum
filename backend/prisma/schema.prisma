@@ -1,0 +1,62 @@
+generator client {
+  provider   = "prisma-client-js"
+  engineType = "library"
+}
+
+datasource db {
+  provider = "sqlserver"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @default("Cliente")
+  orders    Order[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Product {
+  id          Int         @id @default(autoincrement())
+  name        String
+  description String
+  price       Float
+  image_url   String?
+  volume_ml   Int
+  category    String      // "Dama", "Caballero", "Unisex"
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  orderItems  OrderItem[]
+}
+
+model Order {
+  id             Int         @id @default(autoincrement())
+  userId         Int?
+  user           User?       @relation(fields: [userId], references: [id])
+  customerName   String?
+  customerEmail  String?
+  customerPhone  String?
+  shippingAddress String?
+  shippingCity   String?
+  total          Float
+  status         String      @default("Pendiente") // Pendiente, En preparación, Enviado
+  payment_method String      // PSE, Contra entrega
+  payment_status String      @default("Pagar al llegar") // Pagado, Pagar al llegar
+  whatsapp_sent  Boolean     @default(false)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  items          OrderItem[]
+}
+
+model OrderItem {
+  id        Int      @id @default(autoincrement())
+  orderId   Int
+  order     Order    @relation(fields: [orderId], references: [id])
+  productId Int
+  product   Product  @relation(fields: [productId], references: [id])
+  quantity  Int
+  price     Float
+}
