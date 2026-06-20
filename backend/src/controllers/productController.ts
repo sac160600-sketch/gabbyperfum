@@ -24,7 +24,7 @@ export const getProductById = async (req: Request, res: Response): Promise<void>
     const { data, error } = await supabase
       .from('Product')
       .select('*')
-      .eq('id', parseInt(id))
+      .eq('id', parseInt(id as string))
       .single();
 
     if (error || !data) {
@@ -61,7 +61,7 @@ export const updateProduct = async (req: Request, res: Response): Promise<void> 
     const { data, error } = await supabase
       .from('Product')
       .update(req.body)
-      .eq('id', parseInt(id))
+      .eq('id', parseInt(id as string))
       .select()
       .single();
 
@@ -80,7 +80,7 @@ export const deleteProduct = async (req: Request, res: Response): Promise<void> 
     const { error } = await supabase
       .from('Product')
       .delete()
-      .eq('id', parseInt(id));
+      .eq('id', parseInt(id as string));
 
     if (error) throw error;
 

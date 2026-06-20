@@ -45,7 +45,7 @@ export const getOrderById = async (req: Request, res: Response): Promise<void> =
     const { data, error } = await supabase
       .from('Order')
       .select(`*, items:OrderItem(*, product:Product(*))`)
-      .eq('id', parseInt(id))
+      .eq('id', parseInt(id as string))
       .single();
 
     if (error || !data) {
@@ -86,7 +86,7 @@ export const updateOrderStatus = async (req: Request, res: Response): Promise<vo
     const { data, error } = await supabase
       .from('Order')
       .update(updateData)
-      .eq('id', parseInt(id))
+      .eq('id', parseInt(id as string))
       .select()
       .single();
 
@@ -105,7 +105,7 @@ export const markWhatsappSent = async (req: Request, res: Response): Promise<voi
     const { data, error } = await supabase
       .from('Order')
       .update({ whatsapp_sent: true })
-      .eq('id', parseInt(id))
+      .eq('id', parseInt(id as string))
       .select()
       .single();
 
