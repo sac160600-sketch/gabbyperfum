@@ -1,12 +1,17 @@
 import { Request, Response } from 'express';
-import prisma from '../prismaClient';
+import supabase from '../supabaseClient';
 
 export const getProducts = async (req: Request, res: Response): Promise<void> => {
   try {
     const { category } = req.query;
-    const whereClause = category ? { category: String(category) } : {};
-    const products = await prisma.product.findMany({ where: whereClause });
-    res.json(products);
+
+    let query = supabase.from('Product').select('*');
+    if (category) query = query.eq('category', String(category));
+
+    const { data, error } = await query;
+    if (error) throw error;
+
+    res.json(data);
   } catch (error) {
     res.status(500).json({ message: 'Server error', error });
   }
@@ -15,12 +20,19 @@ export const getProducts = async (req: Request, res: Response): Promise<void> =>
 export const getProductById = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-    const product = await prisma.product.findUnique({ where: { id: parseInt(id) } });
-    if (!product) {
+
+    const { data, error } = await supabase
+      .from('Product')
+      .select('*')
+      .eq('id', parseInt(id))
+      .single();
+
+    if (error || !data) {
       res.status(404).json({ message: 'Product not found' });
       return;
     }
-    res.json(product);
+
+    res.json(data);
   } catch (error) {
     res.status(500).json({ message: 'Server error', error });
   }
@@ -28,8 +40,15 @@ export const getProductById = async (req: Request, res: Response): Promise<void>
 
 export const createProduct = async (req: Request, res: Response): Promise<void> => {
   try {
-    const product = await prisma.product.create({ data: req.body });
-    res.status(201).json(product);
+    const { data, error } = await supabase
+      .from('Product')
+      .insert(req.body)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    res.status(201).json(data);
   } catch (error) {
     res.status(500).json({ message: 'Server error', error });
   }
@@ -38,11 +57,17 @@ export const createProduct = async (req: Request, res: Response): Promise<void> 
 export const updateProduct = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-    const product = await prisma.product.update({
-      where: { id: parseInt(id) },
-      data: req.body
-    });
-    res.json(product);
+
+    const { data, error } = await supabase
+      .from('Product')
+      .update(req.body)
+      .eq('id', parseInt(id))
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    res.json(data);
   } catch (error) {
     res.status(500).json({ message: 'Server error', error });
   }
@@ -51,7 +76,14 @@ export const updateProduct = async (req: Request, res: Response): Promise<void> 
 export const deleteProduct = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-    await prisma.product.delete({ where: { id: parseInt(id) } });
+
+    const { error } = await supabase
+      .from('Product')
+      .delete()
+      .eq('id', parseInt(id));
+
+    if (error) throw error;
+
     res.json({ message: 'Product deleted' });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error });

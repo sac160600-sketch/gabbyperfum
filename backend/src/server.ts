@@ -1,14 +1,13 @@
+import 'dotenv/config';
+
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import morgan from 'morgan';
-import dotenv from 'dotenv';
 import authRoutes from './routes/authRoutes';
 import productRoutes from './routes/productRoutes';
 import orderRoutes from './routes/orderRoutes';
-
-dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -17,11 +16,16 @@ const PORT = process.env.PORT || 3000;
 app.use(helmet());
 
 // ─── Pilar 1: CORS Estricto — Solo orígenes autorizados ───
-const allowedOrigins: string[] = [
-  'http://localhost:5173',
-];
-if (process.env.FRONTEND_URL) {
-  allowedOrigins.push(process.env.FRONTEND_URL);
+const isProduction = process.env.NODE_ENV === 'production';
+
+const allowedOrigins: string[] = isProduction
+  ? process.env.FRONTEND_URL
+    ? [process.env.FRONTEND_URL]
+    : []
+  : ['http://localhost:5173'];
+
+if (isProduction && allowedOrigins.length === 0) {
+  console.warn('⚠️  FRONTEND_URL no definida — CORS bloqueará peticiones del navegador.');
 }
 
 app.use(cors({
