@@ -13,17 +13,23 @@ export default function ProductCard({ product, onOpen }: { product: any, onOpen:
         className="aspect-[3/4] bg-[#111827] overflow-hidden rounded-sm relative border border-gray-900"
       >
         {product.image_url ? (
-          <img 
-            src={product.image_url} 
-            alt={product.name} 
+          <img
+            src={product.image_url}
+            alt={product.name}
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+            onError={(e) => {
+              e.currentTarget.style.display = 'none';
+              e.currentTarget.nextElementSibling?.removeAttribute('hidden');
+            }}
           />
-        ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center text-[#d4af37]">
-            <span className="text-2xl font-light tracking-widest">GABBYPERFUM</span>
-            <span className="text-xs text-gray-600 mt-2">{product.category}</span>
-          </div>
-        )}
+        ) : null}
+        <div
+          hidden={!!product.image_url}
+          className="w-full h-full flex flex-col items-center justify-center text-[#d4af37]"
+        >
+          <span className="text-2xl font-light tracking-widest">GABBYPERFUM</span>
+          <span className="text-xs text-gray-600 mt-2">{product.category}</span>
+        </div>
       </div>
       
       <div className="flex flex-col gap-1">
