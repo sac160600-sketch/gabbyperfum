@@ -12,10 +12,7 @@ import orderRoutes from './routes/orderRoutes';
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ─── Pilar 4: Helmet — Oculta cabeceras sensibles ───
-app.use(helmet());
-
-// ─── Pilar 1: CORS — Siempre incluye FRONTEND_URL si está definida ───
+// ─── Pilar 1: CORS — Debe ir ANTES que Helmet ───
 const allowedOrigins: string[] = ['http://localhost:5173'];
 
 if (process.env.FRONTEND_URL) {
@@ -24,7 +21,7 @@ if (process.env.FRONTEND_URL) {
 
 console.log('✅ Orígenes CORS permitidos:', allowedOrigins);
 
-app.use(cors({
+const corsOptions: cors.CorsOptions = {
   origin: (origin, callback) => {
     // Permitir peticiones sin origin (Postman, curl, server-to-server)
     if (!origin) return callback(null, true);
@@ -35,7 +32,16 @@ app.use(cors({
     return callback(new Error('Bloqueado por política CORS'));
   },
   credentials: true,
-}));
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+};
+
+// Responder a todas las peticiones OPTIONS (preflight) antes de cualquier otro middleware
+app.options('*', cors(corsOptions));
+app.use(cors(corsOptions));
+
+// ─── Pilar 4: Helmet — Oculta cabeceras sensibles ───
+app.use(helmet());
 
 // ─── Body parsing ───
 app.use(express.json({ limit: '10kb' }));
