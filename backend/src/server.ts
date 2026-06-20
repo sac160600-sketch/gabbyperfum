@@ -37,7 +37,7 @@ const corsOptions: cors.CorsOptions = {
 };
 
 // Responder a todas las peticiones OPTIONS (preflight) antes de cualquier otro middleware
-app.options('*', cors(corsOptions));
+app.options('/{*path}', cors(corsOptions));
 app.use(cors(corsOptions));
 
 // ─── Pilar 4: Helmet — Oculta cabeceras sensibles ───
