@@ -23,11 +23,14 @@ export default function Home() {
 
   const categories = ['Todos', 'Dama', 'Caballero', 'Unisex'];
 
-  const filteredProducts = products.filter(p => {
-    const matchCategory = category === 'Todos' || p.category === category;
-    const matchSearch = p.name.toLowerCase().includes(search.toLowerCase());
-    return matchCategory && matchSearch;
-  });
+  const filteredProducts = Array.isArray(products)
+    ? products.filter(p => {
+        if (!p || !p.name) return false;
+        const matchCategory = category === 'Todos' || p.category === category;
+        const matchSearch = p.name.toLowerCase().includes(search.toLowerCase());
+        return matchCategory && matchSearch;
+      })
+    : [];
 
   return (
     <div>
