@@ -15,26 +15,23 @@ const PORT = process.env.PORT || 3000;
 // ─── Pilar 4: Helmet — Oculta cabeceras sensibles ───
 app.use(helmet());
 
-// ─── Pilar 1: CORS Estricto — Solo orígenes autorizados ───
-const isProduction = process.env.NODE_ENV === 'production';
+// ─── Pilar 1: CORS — Siempre incluye FRONTEND_URL si está definida ───
+const allowedOrigins: string[] = ['http://localhost:5173'];
 
-const allowedOrigins: string[] = isProduction
-  ? process.env.FRONTEND_URL
-    ? [process.env.FRONTEND_URL]
-    : []
-  : ['http://localhost:5173'];
-
-if (isProduction && allowedOrigins.length === 0) {
-  console.warn('⚠️  FRONTEND_URL no definida — CORS bloqueará peticiones del navegador.');
+if (process.env.FRONTEND_URL) {
+  allowedOrigins.push(process.env.FRONTEND_URL);
 }
+
+console.log('✅ Orígenes CORS permitidos:', allowedOrigins);
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Permitir peticiones sin origin (Postman, curl, mobile apps)
+    // Permitir peticiones sin origin (Postman, curl, server-to-server)
     if (!origin) return callback(null, true);
     if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
+    console.warn(`🚫 CORS bloqueado para origen: ${origin}`);
     return callback(new Error('Bloqueado por política CORS'));
   },
   credentials: true,
